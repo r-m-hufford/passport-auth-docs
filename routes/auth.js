@@ -21,7 +21,7 @@ passport.use(new GoogleStrategy({
         if (err) { return cb(err); }
 
         var id = this.lastID;
-        db.run('INSERT INTO federated_credentials (user_id, provider, subject) VALUES(?, ?, ?)'), [
+        db.run('INSERT INTO federated_credentials (user_id, provider, subject) VALUES (?, ?, ?)', [
           id,
           issuer,
           profile.id
@@ -31,20 +31,30 @@ passport.use(new GoogleStrategy({
             id: id,
             name: profile.displayName
           };
-
           return cb(null, user);
-        }
-      })
+        });
+      });
     } else {
       db.get('SELECT * FROM users WHERE id = ?', [ row.user_id ], function(err, row) {
         if (err) { return cb(err); }
-        if (!row) { return cb(null, false);}
+        if (!row) { return cb(null, false); }
         return cb(null, row);
       });
     }
   });
 }));
 
+passport.serializeUser(function(user, cb) {
+  process.nextTick(function() {
+    cb(null, { id: user.id, username: user.username, name:user.name });
+  });
+});
+
+passport.deserializeUser(function(user, cb) {
+  process.nextTick(function() {
+    return cb(null, user);
+  })
+})
 const router = express.Router();
 
 router.get('/login', (req, res, next) => {
@@ -53,4 +63,15 @@ router.get('/login', (req, res, next) => {
 
 router.get('/login/federated/google', passport.authenticate('google'));
 
+router.get('/oauth2/redirect/google', passport.authenticate('google', {
+  successRedirect: '/',
+  failureRedirect: '/login'
+}));
+
+router.post('/logout', (req, res, next) => {
+  req.logOut(function(err) {
+    if (err) { return next(err) }
+    res.redirect('/');
+  })
+})
 module.exports = router;
