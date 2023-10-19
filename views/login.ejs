@@ -12,6 +12,31 @@
     <section class="prompt">
       <h3>todos</h3>
       <h1>Sign in</h1>
+      <hr />
+      <form action="/login/password" method="post">
+        <section>
+          <label for="username">username</label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            autocomplete="username"
+            required
+            autofocus
+          />
+        </section>
+        <section>
+          <label for="current-password">password</label>
+          <input
+            type="password"
+            id="current-password"
+            name="password"
+            autocomplete="current-password"
+            required
+          />
+        </section>
+        <button type="submit">Sign In</button>
+      </form>
       <a class="button google" href="/login/federated/google"
         >Sign in with Google</a
       >
